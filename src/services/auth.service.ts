@@ -7,6 +7,53 @@ const generateOrgCode = () => {
     return Math.random().toString(36).substring(2, 8).toUpperCase();
 };
 
+export const getUserProfile = async (userId: string) => {
+    // Ambil user beserta info organisasinya
+    const user = await prisma.user.findUnique({
+        where: { id: userId },
+        include: {
+            members: {
+                include: {
+                    organization: true,
+                    role: true,
+                }
+            }
+        }
+    });
+
+    if (!user) throw new Error('User tidak ditemukan');
+
+    // Hapus passwordHash dari object response agar aman
+    const { passwordHash, ...safeUser } = user;
+    return safeUser;
+};
+
+export const updateUserProfile = async (userId: string, data: any) => {
+    const { name, password, newPassword } = data;
+
+    // Cek user dulu
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new Error('User tidak ditemukan');
+
+    let updateData: any = { name };
+
+    // Jika ingin ganti password
+    if (password && newPassword) {
+        const isValid = await comparePassword(password, user.passwordHash);
+        if (!isValid) throw new Error('Password lama salah');
+
+        updateData.passwordHash = await hashPassword(newPassword);
+    }
+
+    const updatedUser = await prisma.user.update({
+        where: { id: userId },
+        data: updateData,
+    });
+
+    const { passwordHash, ...safeUser } = updatedUser;
+    return safeUser;
+};
+
 export const registerUser = async (data: any) => {
     const { name, email, password, orgName, orgDesc, orgCode } = data;
 
