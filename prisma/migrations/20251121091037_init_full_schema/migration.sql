@@ -27,6 +27,7 @@ CREATE TABLE "Role" (
 CREATE TABLE "Organization" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
+    "code" TEXT NOT NULL,
     "description" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -155,6 +156,9 @@ CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Role_name_key" ON "Role"("name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Organization_code_key" ON "Organization"("code");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "AnomalyReport_transactionId_key" ON "AnomalyReport"("transactionId");

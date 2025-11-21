@@ -1,0 +1,104 @@
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    # --- AUTH SCHEMAS ---
+    RegisterRequest:
+      type: object
+      required:
+        - name
+        - email
+        - password
+      properties:
+        name:
+          type: string
+          example: "Budi Ketua"
+        email:
+          type: string
+          format: email
+          example: "ketua@test.com"
+        password:
+          type: string
+          format: password
+          example: "password123"
+        orgName:
+          type: string
+          description: "Isi ini jika ingin MEMBUAT Organisasi baru"
+          example: "Himpunan Mahasiswa Test"
+        orgDesc:
+          type: string
+          example: "Organisasi untuk testing"
+        orgCode:
+          type: string
+          description: "Isi ini jika ingin BERGABUNG ke Organisasi yang sudah ada"
+          example: "AB12CD"
+
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: "ketua@test.com"
+        password:
+          type: string
+          format: password
+          example: "password123"
+
+    AuthResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            token:
+              type: string
+            user:
+              type: object
+
+    # --- TRANSACTION SCHEMAS ---
+    CreateTransactionRequest:
+      type: object
+      required:
+        - orgId
+        - amount
+        - type
+        - transactionDate
+      properties:
+        orgId:
+          type: string
+          format: uuid
+        projectId:
+          type: string
+          format: uuid
+        categoryId:
+          type: string
+          format: uuid
+        amount:
+          type: number
+          example: 150000
+        type:
+          type: string
+          enum: [INCOME, EXPENSE]
+          example: "EXPENSE"
+        description:
+          type: string
+          example: "Beli konsumsi rapat"
+        transactionDate:
+          type: string
+          format: date-time
+          example: "2025-11-20T10:00:00Z"
+        files:
+          type: array
+          items:
+            type: string
+            format: binary

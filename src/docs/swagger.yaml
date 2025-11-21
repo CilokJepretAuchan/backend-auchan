@@ -1,0 +1,16 @@
+openapi: 3.0.0
+info:
+  title: AUCHAN Backend API
+  version: 1.0.0
+  description: Documentation for the AUCHAN transaction & blockchain backend
+  contact:
+    name: API Support
+    email: support@auchan.com
+
+servers:
+  - url: http://localhost:3000
+    description: Local Development Server
+
+# Paths dan Components akan digabungkan secara otomatis oleh swagger.ts
+paths: {}
+components: {}
