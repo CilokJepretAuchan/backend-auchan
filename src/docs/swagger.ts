@@ -5,13 +5,13 @@ import YAML from "yamljs";
 import path from "path";
 
 export const setupSwagger = (app: Express) => {
-    const docsDir = path.resolve(process.cwd(), "dist", "docs");
+    const basePath = path.join(__dirname, "swagger");
 
-    const baseDocument = YAML.load(path.join(docsDir, "swagger.yaml"));
-    const componentsDocument = YAML.load(path.join(docsDir, "components.yaml"));
+    const baseDocument = YAML.load(path.join(basePath, "swagger.yaml"));
+    const componentsDocument = YAML.load(path.join(basePath, "components.yaml"));
 
-    const authPaths = YAML.load(path.join(docsDir, "paths/auth.yaml"));
-    const transactionPaths = YAML.load(path.join(docsDir, "paths/transaction.yaml"));
+    const authPaths = YAML.load(path.join(basePath, "paths/auth.yaml"));
+    const transactionPaths = YAML.load(path.join(basePath, "paths/transaction.yaml"));
 
 
     // Gabungkan semua bagian ke dalam baseDocument
