@@ -8,8 +8,10 @@ import { setupSwagger } from "./docs/swagger";
 import abi from "./contracts/abi.json";
 import { connection } from "./queues/queues";
 import { uploadFile } from "./services/storage.service";
+
 import authRoutes from "./routes/auth.route";
 import transactionRoutes from './routes/transaction.route';
+import organizationRoutes from './routes/organization.route';
 
 dotenv.config();
 
@@ -30,6 +32,7 @@ console.log("Redis connection status:", connection.status);
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/transactions', transactionRoutes);
+app.use('/api/organizations', organizationRoutes);
 
 // Default route
 app.get('/', (req: Request, res: Response) => {

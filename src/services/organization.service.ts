@@ -62,7 +62,6 @@ export const getOrganizationDetails = async (orgId: string, userId: string) => {
 };
 
 export const updateOrganization = async (orgId: string, userId: string, data: { name?: string; description?: string }) => {
-    await validateAdminAccess(orgId, userId);
     return await prisma.organization.update({
         where: { id: orgId },
         data
@@ -74,8 +73,6 @@ export const updateOrganization = async (orgId: string, userId: string, data: { 
 // ==========================================
 
 export const addMember = async (orgId: string, adminId: string, email: string, roleId: number) => {
-    await validateAdminAccess(orgId, adminId);
-
     const userToAdd = await prisma.user.findUnique({ where: { email } });
     if (!userToAdd) throw new Error('User with that email not found');
 
@@ -95,8 +92,6 @@ export const addMember = async (orgId: string, adminId: string, email: string, r
 };
 
 export const removeMember = async (orgId: string, adminId: string, targetUserId: string) => {
-    await validateAdminAccess(orgId, adminId);
-
     if (adminId === targetUserId) throw new Error('Cannot remove yourself');
 
     return await prisma.organizationMember.delete({
@@ -110,8 +105,6 @@ export const removeMember = async (orgId: string, adminId: string, targetUserId:
 };
 
 export const updateMemberRole = async (orgId: string, adminId: string, targetUserId: string, newRoleId: number) => {
-    await validateAdminAccess(orgId, adminId);
-
     if (adminId === targetUserId) throw new Error('Cannot change your own role. Ask another admin.');
 
     const result = await prisma.organizationMember.update({
@@ -133,8 +126,6 @@ export const updateMemberRole = async (orgId: string, adminId: string, targetUse
 // ==========================================
 
 export const createDivision = async (orgId: string, userId: string, name: string) => {
-    await validateAdminAccess(orgId, userId);
-
     return await prisma.division.create({
         data: { name, orgId: orgId }
     });
@@ -154,8 +145,6 @@ export const getDivisionDetail = async (orgId: string, divisionId: string) => {
 };
 
 export const updateDivision = async (orgId: string, userId: string, divisionId: string, name: string) => {
-    await validateAdminAccess(orgId, userId);
-
     // Cek existensi
     const existing = await prisma.division.findFirst({ where: { id: divisionId, orgId: orgId } });
     if (!existing) throw new Error('Division not found');
@@ -167,8 +156,6 @@ export const updateDivision = async (orgId: string, userId: string, divisionId: 
 };
 
 export const deleteDivision = async (orgId: string, userId: string, divisionId: string) => {
-    await validateAdminAccess(orgId, userId);
-
     const existing = await prisma.division.findFirst({ where: { id: divisionId, orgId: orgId } });
     if (!existing) throw new Error('Division not found');
 
@@ -180,8 +167,6 @@ export const deleteDivision = async (orgId: string, userId: string, divisionId: 
 // ==========================================
 
 export const createProject = async (orgId: string, userId: string, data: { projectName: string, budgetAllocated?: number, divisionId: string }) => {
-    await validateAdminAccess(orgId, userId);
-
     if (data.divisionId) {
         const division = await prisma.division.findFirst({
             where: { id: data.divisionId, orgId: orgId }
@@ -223,27 +208,8 @@ export const getProjectDetail = async (orgId: string, projectId: string) => {
 };
 
 export const deleteProject = async (orgId: string, userId: string, projectId: string) => {
-    await validateAdminAccess(orgId, userId);
-
     const existing = await prisma.project.findFirst({ where: { id: projectId, orgId: orgId } });
     if (!existing) throw new Error('Project not found');
 
     return await prisma.project.delete({ where: { id: projectId } });
-};
-
-// ==========================================
-// HELPER: RBAC Check
-// ==========================================
-const validateAdminAccess = async (orgId: string, userId: string) => {
-    const member = await prisma.organizationMember.findUnique({
-        where: { userId_orgId: { orgId, userId } },
-        include: { role: true }
-    });
-
-    if (!member) throw new Error('Not a member');
-
-    const allowedRoles = ['ADMIN', 'OWNER', 'MANAGER'];
-    if (!allowedRoles.includes(member.role.name)) {
-        throw new Error('Forbidden: Insufficient permissions');
-    }
 };
