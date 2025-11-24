@@ -4,8 +4,7 @@
   "main": "dist/server.js",
   "scripts": {
     "dev": "nodemon --watch src --exec ts-node src/server.ts",
-    "build-win": "tsc && rmdir /S /Q dist\\swagger 2>nul & xcopy src\\docs dist\\swagger /E /I /Y",
-    "build": "tsc && rm -rf dist/swagger && cp -r src/docs dist/swagger",
+    "build": "tsc && node scripts/copy-docs.js",
     "worker": "ts-node src/workers/worker.ts",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev --name init"
