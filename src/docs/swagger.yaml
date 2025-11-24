@@ -8,6 +8,8 @@ info:
     email: support@auchan.com
 
 servers:
+  - url: https://backend-auchan-production.up.railway.app/
+    description: Production Server
   - url: http://localhost:3000
     description: Local Development Server
 
