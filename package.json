@@ -4,7 +4,7 @@
   "main": "dist/server.js",
   "scripts": {
     "dev": "nodemon --watch src --exec ts-node src/server.ts",
-    "build": "tsc",
+    "build": "tsc && cp -r src/docs dist/docs",
     "start": "node dist/server.js",
     "worker": "ts-node src/workers/worker.ts",
     "prisma:generate": "prisma generate",
