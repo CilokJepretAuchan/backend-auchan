@@ -1,7 +1,6 @@
 import { z } from 'zod';
 
 // --- Organization Schemas ---
-// ERD: organization_id, name, description
 export const createOrgSchema = z.object({
     name: z.string().min(3, "Nama organisasi minimal 3 karakter"),
     description: z.string().optional(),
@@ -13,10 +12,9 @@ export const updateOrgSchema = z.object({
 });
 
 // --- Member Schemas ---
-// ERD: organization_members (user_id, organization_id, role_id)
 export const addMemberSchema = z.object({
-    email: z.email("Format email tidak valid"),
-    roleId: z.number().int("Role ID harus berupa angka"), // role_id is Serial (Int)
+    email: z.string().email("Format email tidak valid"),
+    roleId: z.number().int("Role ID harus berupa angka"),
 });
 
 export const updateMemberRoleSchema = z.object({
@@ -24,17 +22,19 @@ export const updateMemberRoleSchema = z.object({
 });
 
 // --- Division Schemas ---
-// ERD: division_id, organization_id, name
 export const createDivisionSchema = z.object({
     name: z.string().min(2, "Nama divisi minimal 2 karakter"),
 });
 
+export const updateDivisionSchema = z.object({
+    name: z.string().min(2, "Nama divisi minimal 2 karakter"),
+});
+
 // --- Project Schemas ---
-// ERD: project_name, budget_allocated
 export const createProjectSchema = z.object({
     projectName: z.string().min(3, "Nama project minimal 3 karakter"),
     budgetAllocated: z.number().min(0, "Budget tidak boleh minus"),
-    divisionId: z.string().uuid().optional(), // Opsional sesuai ERD relation
+    divisionId: z.uuid(),
 });
 
 export const updateProjectSchema = z.object({

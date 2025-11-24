@@ -138,8 +138,18 @@ export const registerUser = async (data: any) => {
 export const loginUser = async (data: any) => {
     const { email, password } = data;
 
-    // Cari user
-    const user = await prisma.user.findUnique({ where: { email } });
+    // Cari user beserta info organisasinya
+    const user = await prisma.user.findUnique({
+        where: { email },
+        include: {
+            members: {
+                include: {
+                    organization: true,
+                    role: true,
+                }
+            }
+        }
+    });
     if (!user) throw new Error('Email atau password salah');
 
     // Cek password
@@ -153,5 +163,7 @@ export const loginUser = async (data: any) => {
         { expiresIn: '1d' }
     );
 
-    return { token, user: { id: user.id, name: user.name, email: user.email } };
+    // Hapus passwordHash dari object response agar aman
+    const { passwordHash, ...safeUser } = user;
+    return { token, user: safeUser };
 };

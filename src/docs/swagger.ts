@@ -12,12 +12,14 @@ export const setupSwagger = (app: Express) => {
 
     const authPaths = YAML.load(path.join(basePath, "paths/auth.yaml"));
     const transactionPaths = YAML.load(path.join(basePath, "paths/transaction.yaml"));
+    const organizationPaths = YAML.load(path.join(basePath, "paths/organization.yaml"));
 
 
     // Gabungkan semua bagian ke dalam baseDocument
     baseDocument.paths = {
         ...authPaths,
-        ...transactionPaths
+        ...transactionPaths,
+        ...organizationPaths,
     };
 
     baseDocument.components = componentsDocument.components;
