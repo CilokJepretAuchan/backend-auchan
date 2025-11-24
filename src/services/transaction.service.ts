@@ -1,50 +1,81 @@
 import { prisma } from '../prisma/client';
-import { generateDataHash } from '../utils/hash';
+import { generateDataHash, generateFileHash } from '../utils/hash';
 
-// Input Transaksi
-export const createTransaction = async (userId: string, data: any) => {
-    const { orgId, projectId, categoryId, amount, type, description, date } = data;
+interface TransactionInput {
+    orgId: string;
+    projectId?: string;
+    categoryId?: string;
+    amount: number;
+    type: 'INCOME' | 'EXPENSE';
+    description: string;
+    transactionDate: string;
+}
 
-    // 1. Siapkan Payload Data untuk di-Hash
-    const transactionPayload = {
+export const createTransaction = async (
+    userId: string,
+    data: TransactionInput,
+    files: Express.Multer.File[]
+) => {
+    const { orgId, projectId, categoryId, amount, type, description, transactionDate } = data;
+
+    // Proses Files (Hitung Hash untuk setiap file)
+    const attachmentsData = await Promise.all(files.map(async (file) => {
+        const fileHash = await generateFileHash(file.path);
+        return {
+            fileName: file.originalname,
+            fileUrl: file.path, // Nanti diganti URL S3/Supabase di Production
+            fileSha256: fileHash,
+        };
+    }));
+
+    // Siapkan Data Payload untuk "Blockchain Hash"
+    // Hash ini mengunci integritas: Siapa, Berapa, Kapan, dan Buktinya apa.
+    const integrityPayload = {
+        userId,
         orgId,
-        amount,
-        type, // INCOME / EXPENSE
-        date: new Date(date).toISOString(),
-        description
+        amount: Number(amount), // Pastikan number
+        type,
+        date: new Date(transactionDate).toISOString(),
+        attachments: attachmentsData.map(a => a.fileSha256) // Hash file masuk ke hash transaksi
     };
 
-    // 2. Generate Hash (Simulasi Blockchain Node)
-    const dataHash = generateDataHash(transactionPayload);
+    const blockchainHash = generateDataHash(integrityPayload);
 
-    // 3. Simpan ke Database
-    const transaction = await prisma.transaction.create({
+    // Simpan ke Database (Transaction + Attachments)
+    const result = await prisma.transaction.create({
         data: {
-            userId, // Dari token JWT
-            orgId,  
-            projectId: projectId || undefined,
-            categoryId: categoryId || undefined,
-            amount: amount,
-            type: type,
+            userId,
+            orgId,
+            projectId: projectId || null,
+            categoryId: categoryId || null,
+            amount: Number(amount),
+            type,
             description,
-            transactionDate: new Date(date),
+            transactionDate: new Date(transactionDate),
+            status: 'Pending', // Default Pending
 
-            // Blockchain prep
-            blockchainHash: dataHash,
-            status: 'Pending', // Nanti diupdate jadi 'Verified' setelah AI check
+            blockchainHash, // <--- Hash Integritas disimpan
+
+            attachments: {
+                create: attachmentsData
+            }
+        },
+        include: {
+            attachments: true
         }
     });
 
-    return transaction;
+    return result;
 };
 
-// Get All Transactions (Dashboard)
 export const getTransactions = async (orgId: string) => {
     return await prisma.transaction.findMany({
         where: { orgId },
         include: {
-            user: { select: { name: true } }, // Siapa yang input
-            category: { select: { categoryName: true } }
+            user: { select: { name: true } },
+            category: { select: { categoryName: true } },
+            project: { select: { projectName: true } },
+            attachments: true
         },
         orderBy: { transactionDate: 'desc' }
     });

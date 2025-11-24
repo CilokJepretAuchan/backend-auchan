@@ -1,11 +1,6 @@
 import { prisma } from '../prisma/client';
-import { hashPassword, comparePassword } from '../utils/hash';
+import { hashPassword, comparePassword, generateOrgCode } from '../utils/hash';
 import jwt from 'jsonwebtoken';
-
-// Fungsi helper untuk bikin kode unik (misal: 6 karakter acak)
-const generateOrgCode = () => {
-    return Math.random().toString(36).substring(2, 8).toUpperCase();
-};
 
 export const getUserProfile = async (userId: string) => {
     // Ambil user beserta info organisasinya

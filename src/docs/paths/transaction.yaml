@@ -1,6 +1,6 @@
 /api/transactions:
   post:
-    summary: Create new transaction (Recorded on Blockchain)
+    summary: Create new transaction with Attachments
     tags:
       - Transaction
     security:
@@ -8,7 +8,7 @@
     requestBody:
       required: true
       content:
-        application/json:
+        multipart/form-data:
           schema:
             $ref: '#/components/schemas/CreateTransactionRequest'
     responses:
@@ -16,11 +16,9 @@
         description: Transaction created
       '400':
         description: Validation error
-      '401':
-        description: Unauthorized
 
   get:
-    summary: Get all transactions for an Organization
+    summary: Get all transactions
     tags:
       - Transaction
     security:
@@ -31,7 +29,6 @@
         schema:
           type: string
         required: true
-        description: Organization ID to filter
     responses:
       '200':
         description: List of transactions

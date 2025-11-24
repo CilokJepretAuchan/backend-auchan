@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import * as authService from '../services/auth.service';
-import { loginSchema, registerSchema } from '../utils/validation';
+import { loginSchema, registerSchema } from '../utils/validation/auth.schema';
 import { AuthRequest } from '../middlewares/auth.middleware';
 
 export const register = async (req: Request, res: Response) => {
