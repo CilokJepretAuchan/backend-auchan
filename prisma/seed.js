@@ -1,12 +1,10 @@
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
-
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const client_1 = require("@prisma/client");
+const prisma = new client_1.PrismaClient();
 async function main() {
     console.log('🌱 Start seeding...');
-    
     const roles = ['ADMIN', 'TREASURER', 'SUPER_ADMIN', 'MEMBER'];
-
     for (const roleName of roles) {
         await prisma.role.upsert({
             where: { name: roleName },
@@ -15,7 +13,6 @@ async function main() {
         });
     }
     console.log('✅ Roles seeded');
-
     const demoOrg = await prisma.organization.create({
         data: {
             name: 'Himpunan Mahasiswa Informatika (Dummy)',
@@ -38,15 +35,13 @@ async function main() {
         }
     });
     console.log(`✅ Demo Organization created: ${demoOrg.name} with code: DEMO123`);
-
     console.log('🌱 Seeding finished.');
 }
-
 main()
     .catch((e) => {
-        console.error(e);
-        process.exit(1);
-    })
+    console.error(e);
+    process.exit(1);
+})
     .finally(async () => {
-        await prisma.$disconnect();
-    });
+    await prisma.$disconnect();
+});

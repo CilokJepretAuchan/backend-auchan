@@ -22,21 +22,21 @@ new Worker(
     { connection }
 );
 
-new Worker(
-    "aiQueue",
-    async (job) => {
-        const score = Math.random();
-        const flagged = score > 0.7;
+// new Worker(
+//     "aiQueue",
+//     async (job) => {
+//         const score = Math.random();
+//         const flagged = score > 0.7;
 
-        await prisma.transaction.update({
-            where: { id: job.data.transactionId },
-            data: {
-                aiAnomalyScore: score,
-                anomalyStatus: flagged ? "Pending" : "None"
-            }
-        });
-    },
-    { connection }
-);
+//         await prisma.transaction.update({
+//             where: { id: job.data.transactionId },
+//             data: {
+//                 aiAnomalyScore: score,
+//                 anomalyStatus: flagged ? "Pending" : "None"
+//             }
+//         });
+//     },
+//     { connection }
+// );
 
 console.log("Workers running...");
