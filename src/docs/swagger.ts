@@ -5,7 +5,7 @@ import YAML from "yamljs";
 import path from "path";
 
 export const setupSwagger = (app: Express) => {
-    const basePath = path.join(__dirname, "swagger");
+    const basePath = path.join(__dirname);
 
     const baseDocument = YAML.load(path.join(basePath, "swagger.yaml"));
     const componentsDocument = YAML.load(path.join(basePath, "components.yaml"));
