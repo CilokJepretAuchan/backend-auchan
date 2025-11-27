@@ -1,17 +1,51 @@
-import { ethers } from "ethers";
-import abi from "../contracts/abi.json"
+// In a production environment, this service would use a library like ethers.js or web3.js
+// to communicate with a deployed smart contract on a private blockchain (e.g., Polygon Edge, Hyperledger Besu).
+// The smart contract would have functions like `storeHash(bytes32)` and `getHash(uint256)`.
 
-const provider = new ethers.JsonRpcProvider(process.env.RPC_URL);
-const wallet = new ethers.Wallet(process.env.PRIVATE_KEY!, provider);
+import { randomBytes, randomInt } from 'crypto';
 
-const contract = new ethers.Contract(
-    process.env.CONTRACT_ADDRESS!,
-    abi.abi,
-    wallet
-);
-
-export async function submitHashToChain(id: string, hash: string) {
-    const tx = await contract.submitHash(id, hash);
-    const receipt = await tx.wait();
-    return { txHash: receipt.hash };
+interface BlockchainReceipt {
+    onchainTxId: string;
+    blockHash: string;
+    blockNumber: number;
 }
+
+/**
+ * MOCK: Simulates writing a hash to a blockchain smart contract.
+ *
+ * @param hashToStore The SHA-256 hash of the transaction integrity payload.
+ * @returns A promise that resolves to a mock blockchain transaction receipt.
+ */
+export const storeHashOnChain = async (hashToStore: string): Promise<BlockchainReceipt> => {
+    const mockTxId = `0x${randomBytes(32).toString('hex')}`;
+    const mockBlockHash = `0x${randomBytes(32).toString('hex')}`;
+    const mockBlockNumber = randomInt(1_000_000, 2_000_000);
+
+    console.log(`[MockBlockchainService] Storing hash ${hashToStore.substring(0, 10)}... on chain.`);
+    console.log(`[MockBlockchainService] --> On-chain TxID: ${mockTxId}`);
+
+    // Simulate network latency for the transaction to be mined.
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    return {
+        onchainTxId: mockTxId,
+        blockHash: mockBlockHash,
+        blockNumber: mockBlockNumber,
+    };
+};
+
+/**
+ * MOCK: Simulates retrieving a hash from the blockchain for verification.
+ *
+ * @param onchainTxId The on-chain transaction ID to look up.
+ * @returns The hash stored on-chain. In this mock, it returns a placeholder to simulate failure.
+ */
+export const getHashFromChain = async (onchainTxId: string): Promise<string | null> => {
+    console.log(`[MockBlockchainService] Fetching hash for on-chain TxID: ${onchainTxId}`);
+    
+    // In a real scenario, you would query the blockchain.
+    // Here, we can't reconstruct the original hash, so we return a dummy value
+    // to demonstrate what would happen if verification failed. To test a successful
+    // verification, one would need a more stateful mock or a local testnet.
+    return Promise.resolve(`0x_mock_hash_retrieved_from_chain_for_${onchainTxId}`);
+};

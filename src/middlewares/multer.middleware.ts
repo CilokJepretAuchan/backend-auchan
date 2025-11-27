@@ -26,9 +26,16 @@ const fileFilter = (req: any, file: Express.Multer.File, cb: any) => {
     const mimetype = allowedTypes.test(file.mimetype);
 
     if (extname && mimetype) {
+        // File diterima
         return cb(null, true);
     } else {
-        cb(new Error('Hanya file Gambar (JPG/PNG) dan PDF yang diperbolehkan!'));
+        // PERUBAHAN DI SINI:
+        // Jika file tidak valid, kita tolak (false) tanpa melempar Error 500.
+        // File ini tidak akan masuk ke req.files, jadi array attachments akan kosong atau berkurang.
+        cb(null, false);
+
+        // Opsi Alternatif: Jika ingin tetap strict error untuk file .exe tapi loloskan yg kosong
+        // Anda bisa cek file.originalname.length === 0, tapi cb(null, false) lebih aman untuk skip file sampah.
     }
 };
 

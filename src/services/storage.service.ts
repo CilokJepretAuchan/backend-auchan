@@ -1,18 +1,32 @@
-import { createClient } from '@supabase/supabase-js';
-const supabaseUrl = process.env.SUPABASE_URL!;
-const supabaseKey = process.env.SUPABASE_KEY!;
-const bucket = process.env.SUPABASE_BUCKET || 'attachments';
-const supabase = createClient(supabaseUrl, supabaseKey);
+// In a production environment, this service would interface with a cloud storage provider
+// like AWS S3, Google Cloud Storage, or Supabase Storage to securely upload files
+// and retrieve their public, permanent URLs.
 
-async function uploadFile(fileBuffer: any, filename: string, mimeType: any) {
-    const path = `${Date.now()}_${filename}`;
-    const { data, error } = await supabase.storage.from(bucket).upload(path, fileBuffer, {
-        contentType: mimeType,
-        upsert: false,
-    });
-    if (error) throw error;
-    const url = supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl;
-    return { path, url };
-}
+import { randomUUID } from 'crypto';
 
-export { uploadFile };
+/**
+ * MOCK: Simulates uploading a file to a cloud storage bucket.
+ * In a real implementation, you would use a client library like `@supabase/storage-js`
+ * or `aws-sdk` to handle the upload stream.
+ *
+ * @param file - The file object from Express.Multer.
+ * @returns A promise that resolves to an object containing the public URL and the storage path.
+ */
+export const uploadFile = async (
+    file: Express.Multer.File
+): Promise<{ publicUrl: string; path: string }> => {
+    // Simulate a realistic storage path, e.g., 'public/receipts/<uuid>.<ext>'
+    const fileExtension = file.originalname.split('.').pop() || 'tmp';
+    const uniqueFileName = `${randomUUID()}.${fileExtension}`;
+    const storagePath = `public/receipts/${uniqueFileName}`;
+
+    // Simulate a public URL provided by the storage provider.
+    const fakePublicUrl = `https://your-project.supabase.co/storage/v1/object/public/receipts/${uniqueFileName}`;
+
+    console.log(`[MockStorageService] Simulating upload for '${file.originalname}' to '${storagePath}'`);
+    
+    // Simulate a brief network delay for the upload.
+    await new Promise(resolve => setTimeout(resolve, 200));
+
+    return { publicUrl: fakePublicUrl, path: storagePath };
+};

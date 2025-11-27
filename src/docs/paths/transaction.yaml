@@ -1,6 +1,6 @@
 /api/transactions:
   post:
-    summary: Create new transaction with Attachments
+    summary: Create New Transaction with Attachments
     tags:
       - Transaction
     security:
@@ -10,15 +10,72 @@
       content:
         multipart/form-data:
           schema:
-            $ref: '#/components/schemas/CreateTransactionRequest'
+            type: object
+            properties:
+              orgId:
+                type: string
+                format: uuid
+              amount:
+                type: number
+                format: double
+              type:
+                type: string
+                enum: [INCOME, EXPENSE]
+              description:
+                type: string
+              transactionDate:
+                type: string
+                format: date-time
+              projectId:
+                type: string
+                format: uuid
+              categoryId:
+                type: string
+                format: uuid
+              attachments:
+                type: array
+                nullable: true
+                description: Optional. Allowed formats: JPG, PNG, PDF.
+                items:
+                  type: string
+                  format: binary
+            required:
+              - orgId
+              - amount
+              - type
+              - description
+              - transactionDate
+          encoding:
+            attachments:
+              contentType: image/png, image/jpeg, application/pdf
     responses:
       '201':
-        description: Transaction created
+        description: Transaction created successfully and queued for blockchain confirmation.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+                data:
+                  type: object
+        example:
+          success: true
+          message: "Transaction recorded and queued for blockchain confirmation."
+          data:
+            id: "txn_12345"
+            status: "Pending"
+            blockchainHash: "0xabcde..."
       '400':
-        description: Validation error
+        description: Validation error (e.g., invalid data format).
+      '403':
+        description: Forbidden (user is not a member of the organization).
 
   get:
-    summary: Get all transactions
+    summary: List All Transactions for an Organization
     tags:
       - Transaction
     security:
@@ -28,7 +85,225 @@
         name: orgId
         schema:
           type: string
+          format: uuid
+        required: true
+        description: The ID of the organization to retrieve transactions for.
+      - in: query
+        name: divisionId
+        schema:
+          type: string
+          format: uuid
+        required: false
+        description: Filter transactions by Division ID.
+      - in: query
+        name: projectId
+        schema:
+          type: string
+          format: uuid
+        required: false
+        description: Filter transactions by Project ID.
+      - in: query
+        name: page
+        schema:
+          type: integer
+          default: 1
+        description: The page number for pagination.
+      - in: query
+        name: limit
+        schema:
+          type: integer
+          default: 20
+        description: The number of items per page.
+    responses:
+      '200':
+        description: A paginated list of transactions.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                data:
+                  type: array
+                  items:
+                    type: object
+      '400':
+        description: Validation error.
+      '403':
+        description: Forbidden.
+
+/api/transactions/{id}:
+  get:
+    summary: Get Transaction Details
+    tags:
+      - Transaction
+    security:
+      - bearerAuth: []
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+        description: Transaction ID
+      - in: query
+        name: organizationId
+        schema:
+          type: string
+          format: uuid
+        required: true
+        description: Organization ID required for verification check
+    responses:
+      '200':
+        description: Transaction details retrieved
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                data:
+                  type: object
+      '404':
+        description: Transaction not found
+
+  put:
+    summary: Update Transaction
+    description: Update transaction details. Changing critical fields (amount, type, date) will regenerate the integrity hash.
+    tags:
+      - Transaction
+    security:
+      - bearerAuth: []
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: query
+        name: organizationId
+        schema:
+          type: string
+          format: uuid
+        required: true
+        description: Organization ID is required for security
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              amount:
+                type: number
+              type:
+                type: string
+                enum: [INCOME, EXPENSE]
+              description:
+                type: string
+              transactionDate:
+                type: string
+                format: date-time
+              projectId:
+                type: string
+                format: uuid
+              categoryId:
+                type: string
+                format: uuid
+              status:
+                type: string
+                enum: [PENDING, APPROVED, REJECTED]
+    responses:
+      '200':
+        description: Transaction updated
+        content:
+           application/json:
+             schema:
+               type: object
+               properties:
+                 success:
+                   type: boolean
+                 message:
+                   type: string
+                 data:
+                   type: object
+      '400':
+        description: Validation error
+
+  delete:
+    summary: Delete Transaction
+    tags:
+      - Transaction
+    security:
+      - bearerAuth: []
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: query
+        name: organizationId
+        schema:
+          type: string
+          format: uuid
         required: true
     responses:
       '200':
-        description: List of transactions
+        description: Transaction deleted successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                message:
+                  type: string
+
+/api/transactions/{id}/verify:
+  get:
+    summary: Verify Transaction Integrity
+    tags:
+      - Transaction
+    security:
+      - bearerAuth: []
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+        description: The ID of the transaction to verify.
+    responses:
+      '200':
+        description: The result of the integrity verification.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                data:
+                  type: object
+                  properties:
+                    isVerifiable:
+                      type: boolean
+                    isIntegral:
+                      type: boolean
+                    status:
+                      type: string
+                      enum: [VERIFIED, TAMPERED, CHAIN_MISMATCH_OR_MOCK, PENDING]
+                    message:
+                      type: string
+      '403':
+        description: Forbidden.
+      '404':
+        description: Transaction not found.

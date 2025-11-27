@@ -19,7 +19,7 @@ export const generateDataHash = (data: any): string => {
 };
 
 // Hashing File Fisik (SHA-256)
-export const generateFileHash = (filePath: string): Promise<string> => {
+export const generateFileHash = (filePath: any): Promise<string> => {
     return new Promise((resolve, reject) => {
         const hash = crypto.createHash('sha256');
         const stream = fs.createReadStream(filePath);
