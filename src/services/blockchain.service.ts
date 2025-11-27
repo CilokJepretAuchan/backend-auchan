@@ -1,7 +1,3 @@
-// In a production environment, this service would use a library like ethers.js or web3.js
-// to communicate with a deployed smart contract on a private blockchain (e.g., Polygon Edge, Hyperledger Besu).
-// The smart contract would have functions like `storeHash(bytes32)` and `getHash(uint256)`.
-
 import { randomBytes, randomInt } from 'crypto';
 
 interface BlockchainReceipt {
@@ -42,10 +38,7 @@ export const storeHashOnChain = async (hashToStore: string): Promise<BlockchainR
  */
 export const getHashFromChain = async (onchainTxId: string): Promise<string | null> => {
     console.log(`[MockBlockchainService] Fetching hash for on-chain TxID: ${onchainTxId}`);
-    
+
     // In a real scenario, you would query the blockchain.
-    // Here, we can't reconstruct the original hash, so we return a dummy value
-    // to demonstrate what would happen if verification failed. To test a successful
-    // verification, one would need a more stateful mock or a local testnet.
     return Promise.resolve(`0x_mock_hash_retrieved_from_chain_for_${onchainTxId}`);
 };
