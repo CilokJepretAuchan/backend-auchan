@@ -1,7 +1,7 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middlewares/auth.middleware';
 import * as transactionService from '../services/transaction.service';
-import { createTransactionSchema, listTransactionsSchema, updateTransactionSchema } from '../utils/validation/transaction.shema';
+import { createTransactionSchema, listTransactionsSchema, updateTransactionSchema } from '../utils/validation/transaction.schema';
 import { ZodError } from 'zod';
 
 /**
@@ -12,7 +12,6 @@ import { ZodError } from 'zod';
 export const create = async (req: AuthRequest, res: Response) => {
     try {
         const userId = req.user?.userId!;
-        console.log(req.body);
 
         const validatedData = createTransactionSchema.parse(req.body);
 
@@ -44,7 +43,6 @@ export const list = async (req: AuthRequest, res: Response) => {
         if (!userId) {
             return res.status(401).json({ success: false, error: 'Unauthorized' });
         }
-        console.log(req.query);
         // Validate query parameters for pagination and organization ID.
         const validatedQuery = listTransactionsSchema.parse(req.query);
 
@@ -103,14 +101,13 @@ export const getDetail = async (req: AuthRequest, res: Response) => {
 export const update = async (req: AuthRequest, res: Response) => {
     try {
         const { id } = req.params;
-        const { organizationId } = req.query; // Wajib dikirim frontend/client
         const userId = req.user?.userId!;
 
-        if (!organizationId) throw new Error("Organization ID is required");
+        if (!userId) throw new Error("User ID is required");
 
         const validatedData = updateTransactionSchema.parse(req.body);
 
-        const result = await transactionService.updateTransaction(id, organizationId as string, validatedData);
+        const result = await transactionService.updateTransaction(id, userId, validatedData);
 
         return res.status(200).json({ success: true, message: 'Transaction updated', data: result });
     } catch (error: any) {
@@ -125,11 +122,11 @@ export const update = async (req: AuthRequest, res: Response) => {
 export const remove = async (req: AuthRequest, res: Response) => {
     try {
         const { id } = req.params;
-        const { organizationId } = req.query;
+        const userId = req.user?.userId!;
 
-        if (!organizationId) throw new Error("Organization ID is required");
+        if (!userId) throw new Error("User ID is required");
 
-        await transactionService.deleteTransaction(id, organizationId as string);
+        await transactionService.deleteTransaction(id, userId);
 
         return res.status(200).json({ success: true, message: 'Transaction deleted' });
     } catch (error: any) {

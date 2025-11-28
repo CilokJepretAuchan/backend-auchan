@@ -8,7 +8,6 @@ const emptyStringToNull = (val: unknown) => (val === "" ? null : val);
  * This schema is used in the controller to validate incoming requests.
  */
 export const createTransactionSchema = z.object({
-    orgId: z.uuid({ message: "Invalid Organization ID format." }),
     amount: z.coerce.number().positive({ message: "Amount must be a positive number." }),
     type: z.enum(['INCOME', 'EXPENSE'] as const, { message: "Type must be either INCOME or EXPENSE." }),
     description: z.string().min(3, { message: "Description must be at least 3 characters long." }),

@@ -2,7 +2,7 @@ import { prisma } from '../prisma/client';
 import { generateDataHash, generateFileHash } from '../utils/hash';
 import * as storageService from './storage.service';
 import * as blockchainService from './blockchain.service';
-import { createTransactionSchema, listTransactionsSchema, updateTransactionSchema } from '../utils/validation/transaction.shema';
+import { createTransactionSchema, listTransactionsSchema, updateTransactionSchema } from '../utils/validation/transaction.schema';
 import { z } from 'zod';
 
 // Type definition for the input data when creating a transaction.
@@ -24,6 +24,22 @@ export const createTransaction = async (
     data: TransactionInput,
     files: Express.Multer.File[]
 ) => {
+    const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+            members: {
+                take: 1, // Ambil organisasi pertama (asumsi single-org context per login)
+                select: { orgId: true }
+            }
+        }
+    });
+
+    if (!user || !user.members || user.members.length === 0) {
+        throw new Error("User tidak terhubung dengan Organization manapun.");
+    }
+
+    // Ambil Organization ID dari membership user
+    const orgId = user.members[0].orgId;
     // 1. Upload files to secure storage and compute their hashes.
     let attachmentsData: { fileName: string; fileUrl: string; fileSha256: string; }[] = [];
     if (files.length > 0) {
@@ -44,7 +60,7 @@ export const createTransaction = async (
     // that will be hashed to ensure it cannot be tampered with.
     const integrityPayload = {
         userId,
-        orgId: data.orgId,
+        orgId,
         amount: data.amount,
         type: data.type,
         date: data.transactionDate.toISOString(),
@@ -60,7 +76,7 @@ export const createTransaction = async (
         data: {
             // Transaction details
             userId,
-            orgId: data.orgId,
+            orgId,
             projectId: projectIdToSave,
             categoryId: categoryIdToSave,
             amount: data.amount,
@@ -228,11 +244,28 @@ export const getTransactions = async (userId: string, query: ListInput) => {
  */
 export const updateTransaction = async (
     transactionId: string,
-    organizationId: string,
+    userId: string,
     data: UpdateInput
 ) => {
+    const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+            members: {
+                take: 1, // Ambil organisasi pertama (asumsi single-org context per login)
+                select: { orgId: true }
+            }
+        }
+    });
+
+    if (!user || !user.members || user.members.length === 0) {
+        throw new Error("User tidak terhubung dengan Organization manapun.");
+    }
+
+    // Ambil Organization ID dari membership user
+    const orgId = user.members[0].orgId;
+
     const existing = await prisma.transaction.findFirst({
-        where: { id: transactionId, orgId: organizationId },
+        where: { id: transactionId, orgId },
         include: { attachments: true }
     });
 
@@ -278,9 +311,26 @@ export const updateTransaction = async (
  * Menghapus transaksi (Hard Delete).
  * Biasanya financial app menggunakan Soft Delete (status: VOID), tapi ini sesuai request.
  */
-export const deleteTransaction = async (transactionId: string, organizationId: string) => {
+export const deleteTransaction = async (transactionId: string, userId: string) => {
+    const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+            members: {
+                take: 1, // Ambil organisasi pertama (asumsi single-org context per login)
+                select: { orgId: true }
+            }
+        }
+    });
+
+    if (!user || !user.members || user.members.length === 0) {
+        throw new Error("User tidak terhubung dengan Organization manapun.");
+    }
+
+    // Ambil Organization ID dari membership user
+    const orgId = user.members[0].orgId;
+
     const existing = await prisma.transaction.findFirst({
-        where: { id: transactionId, orgId: organizationId }
+        where: { id: transactionId, orgId }
     });
 
     if (!existing) throw new Error('Transaction not found');

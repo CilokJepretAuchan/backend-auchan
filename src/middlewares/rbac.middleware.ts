@@ -17,7 +17,24 @@ export const authorize = (allowedRoles: string[]) => {
             }
 
             // Flexibly retrieve Organization ID from params, query, or body
-            const orgId = req.params.id || req.params.orgId || (req.query.orgId as string) || req.body.orgId;
+            let orgId = req.params.id || req.params.orgId || (req.query.orgId as string) || req.body.orgId;
+            // If orgId is not in the request, try to get it from the user's membership
+            if (!orgId) {
+                const user = await prisma.user.findUnique({
+                    where: { id: userId },
+                    select: {
+                        members: {
+                            take: 1,
+                            select: { orgId: true }
+                        }
+                    }
+                });
+
+                if (user && user.members && user.members.length > 0) {
+                    orgId = user.members[0].orgId;
+                }
+            }
+
             if (!orgId) {
                 return res.status(400).json({ success: false, message: 'Bad Request: Organization ID not provided.' });
             }

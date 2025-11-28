@@ -1,6 +1,7 @@
 /api/transactions:
   post:
     summary: Create New Transaction with Attachments
+    description: Create a new transaction. Handles multipart/form-data for file uploads. Accessible by users with ADMIN, OWNER, TREASURER, or AUDITOR roles.
     tags:
       - Transaction
     security:
@@ -12,9 +13,6 @@
           schema:
             type: object
             properties:
-              orgId:
-                type: string
-                format: uuid
               amount:
                 type: number
                 format: double
@@ -40,7 +38,6 @@
                   type: string
                   format: binary
             required:
-              - orgId
               - amount
               - type
               - description
@@ -76,6 +73,7 @@
 
   get:
     summary: List All Transactions for an Organization
+    description: List transactions for an organization with pagination. Accessible by all organization members (ADMIN, OWNER, MANAGER, MEMBER, VIEWER roles).
     tags:
       - Transaction
     security:
@@ -122,6 +120,7 @@
 /api/transactions/{id}:
   get:
     summary: Get Transaction Details
+    description: Get transaction details. Accessible by all organization members (ADMIN, OWNER, MANAGER, MEMBER, VIEWER roles).
     tags:
       - Transaction
     security:
@@ -151,7 +150,7 @@
 
   put:
     summary: Update Transaction
-    description: Update transaction details. Changing critical fields (amount, type, date) will regenerate the integrity hash.
+    description: Update transaction details. Changing critical fields (amount, type, date) will regenerate the integrity hash. Accessible by users with ADMIN, OWNER, TREASURER, or AUDITOR roles.
     tags:
       - Transaction
     security:
@@ -163,13 +162,6 @@
           type: string
           format: uuid
         required: true
-      - in: query
-        name: organizationId
-        schema:
-          type: string
-          format: uuid
-        required: true
-        description: Organization ID is required for security
     requestBody:
       required: true
       content:
@@ -193,9 +185,6 @@
               categoryId:
                 type: string
                 format: uuid
-              status:
-                type: string
-                enum: [PENDING, APPROVED, REJECTED]
     responses:
       '200':
         description: Transaction updated
@@ -215,6 +204,7 @@
 
   delete:
     summary: Delete Transaction
+    description: Delete transaction. Accessible by users with ADMIN, OWNER, TREASURER, or AUDITOR roles.
     tags:
       - Transaction
     security:
@@ -222,12 +212,6 @@
     parameters:
       - in: path
         name: id
-        schema:
-          type: string
-          format: uuid
-        required: true
-      - in: query
-        name: organizationId
         schema:
           type: string
           format: uuid
@@ -248,6 +232,7 @@
 /api/transactions/{id}/verify:
   get:
     summary: Verify Transaction Integrity
+    description: Verify the integrity of a single transaction against the blockchain. Restricted to users with ADMIN, OWNER, TREASURER, or AUDITOR roles.
     tags:
       - Transaction
     security:

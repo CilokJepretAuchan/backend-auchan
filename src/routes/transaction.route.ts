@@ -8,7 +8,7 @@ const router = Router();
 
 // Define roles for route protection
 const allMemberRoles = ['ADMIN', 'OWNER', 'MANAGER', 'MEMBER', 'VIEWER'];
-const adminRoles = ['ADMIN', 'OWNER', 'MANAGER']; // Auditors might be added here later
+const adminRoles = ['ADMIN', 'OWNER', 'TREASURER', 'AUDITOR']; // Auditors might be added here later
 
 // All routes require a valid JWT
 router.use(authenticateJWT);
@@ -18,7 +18,7 @@ router.use(authenticateJWT);
  * @description Create a new transaction. Handles multipart/form-data for file uploads.
  * User must be a member of the organization.
  */
-router.post('/', upload.array('attachments', 5) as any, transactionController.create as any);
+router.post('/', authorize(adminRoles), upload.array('attachments', 5) as any, transactionController.create as any);
 
 /**
  * @route GET /api/transactions
@@ -34,9 +34,9 @@ router.get('/', authorize(allMemberRoles), transactionController.list);
  */
 router.get('/:id/verify', authorize(adminRoles), transactionController.verify);
 
-router.get('/:id', transactionController.getDetail);
-router.put('/:id', transactionController.update);
-router.delete('/:id', transactionController.remove);
+router.get('/:id', authorize(allMemberRoles), transactionController.getDetail);
+router.put('/:id', authorize(adminRoles), transactionController.update);
+router.delete('/:id', authorize(adminRoles), transactionController.remove);
 
 
 export default router;
