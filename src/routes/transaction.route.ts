@@ -28,6 +28,13 @@ router.post('/', authorize(adminRoles), upload.array('attachments', 5) as any, t
 router.get('/', authorize(allMemberRoles), transactionController.list);
 
 /**
+ * @route GET /api/transactions/statistics
+ * @description Get dashboard statistics for an organization.
+ * User must be a member of the organization.
+ */
+router.get('/statistics', authorize(allMemberRoles), transactionController.getStatistics as any);
+
+/**
  * @route GET /api/transactions/:id/verify
  * @description Verify the integrity of a single transaction against the blockchain.
  * Restricted to admin/auditor roles.

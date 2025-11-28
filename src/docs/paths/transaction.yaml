@@ -229,6 +229,48 @@
                 message:
                   type: string
 
+
+/api/transactions/statistics:
+  get:
+    summary: Get Dashboard Statistics
+    description: Retrieves aggregated financial statistics for the user's organization, including total income, total expenses, and the number of anomalous transactions. Accessible by all organization members.
+    tags:
+      - Transaction
+    security:
+      - bearerAuth: []
+    responses:
+      '200':
+        description: Successfully retrieved dashboard statistics.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
+                  properties:
+                    totalAmountIncome:
+                      type: number
+                      format: double
+                      example: 150000.75
+                    totalAmountExpense:
+                      type: number
+                      format: double
+                      example: 75000.50
+                    totalAnomaly:
+                      type: integer
+                      example: 5
+                    totalTransaction:
+                      type: integer
+                      example: 100
+      '401':
+        description: Unauthorized - No authentication token or invalid token.
+      '400':
+        description: Bad request or an unexpected error occurred.
+
 /api/transactions/{id}/verify:
   get:
     summary: Verify Transaction Integrity

@@ -116,20 +116,70 @@ export const update = async (req: AuthRequest, res: Response) => {
     }
 };
 
+
+
 /**
+
  * Delete Transaction
+
  */
+
 export const remove = async (req: AuthRequest, res: Response) => {
+
     try {
+
         const { id } = req.params;
+
         const userId = req.user?.userId!;
+
+
 
         if (!userId) throw new Error("User ID is required");
 
+
+
         await transactionService.deleteTransaction(id, userId);
 
+
+
         return res.status(200).json({ success: true, message: 'Transaction deleted' });
+
     } catch (error: any) {
+
         return res.status(400).json({ success: false, error: error.message });
+
     }
+
+};
+
+
+
+export const getStatistics = async (req: AuthRequest, res: Response) => {
+
+    try {
+
+        const userId = req.user?.userId;
+
+
+
+        if (!userId) {
+
+            return res.status(401).json({ success: false, error: 'Unauthorized' });
+
+        }
+
+
+
+        const result = await transactionService.getDashboardStatistics(userId);
+
+
+
+        return res.status(200).json({ success: true, data: result });
+
+    } catch (error: any) {
+
+        return res.status(400).json({ success: false, error: error.message });
+
+    }
+
 };

@@ -102,3 +102,19 @@ components:
           items:
             type: string
             format: binary
+
+    # --- CATEGORY SCHEMAS ---
+    Category:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "cat_12345"
+        orgId:
+          type: string
+          format: uuid
+          example: "org_67890"
+        categoryName:
+          type: string
+          example: "Office Supplies"

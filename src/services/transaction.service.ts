@@ -342,6 +342,59 @@ export const deleteTransaction = async (transactionId: string, userId: string) =
     ]);
 };
 
+
+/**
+ * Retrieves dashboard statistics for the user's organization.
+ * @param userId The ID of the user requesting the statistics.
+ * @returns An object containing total income, total expense, and anomaly count.
+ */
+export const getDashboardStatistics = async (userId: string) => {
+    const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+            members: {
+                take: 1,
+                select: { orgId: true }
+            }
+        }
+    });
+
+    if (!user || !user.members || user.members.length === 0) {
+        throw new Error("User is not associated with any organization.");
+    }
+
+    const orgId = user.members[0].orgId;
+
+    const [incomeResult, expenseResult, anomalyCount, totalTransactions] = await Promise.all([
+        prisma.transaction.aggregate({
+            _sum: { amount: true },
+            where: { orgId, type: 'INCOME' },
+        }),
+        prisma.transaction.aggregate({
+            _sum: { amount: true },
+            where: { orgId, type: 'EXPENSE' },
+        }),
+        prisma.anomalyReport.count({
+            where: {
+                aiScore: 1,
+                transaction: {
+                    orgId,
+                },
+            },
+        }),
+        prisma.transaction.count({
+            where: { orgId },
+        }),
+    ]);
+
+    return {
+        totalAmountIncome: incomeResult._sum.amount ?? 0,
+        totalAmountExpense: expenseResult._sum.amount ?? 0,
+        totalAnomaly: anomalyCount,
+        totalTransaction: totalTransactions,
+    };
+};
+
 /**
  * UC-04: Verifies the integrity of a single transaction against the blockchain.
  *

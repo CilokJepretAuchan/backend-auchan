@@ -12,6 +12,7 @@ import { uploadFile } from "./services/storage.service";
 import authRoutes from "./routes/auth.route";
 import transactionRoutes from './routes/transaction.route';
 import organizationRoutes from './routes/organization.route';
+import categoryRoutes from './routes/category.route';
 
 dotenv.config();
 
@@ -21,18 +22,15 @@ setupSwagger(app);
 // Middlewares
 app.use(cors());
 app.use(helmet());
-app.use(morgan("dev"));
+app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Test import usage
-console.log("Smart Contract ABI loaded:", Array.isArray(abi));
-console.log("Redis connection status:", connection.status);
 
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/organizations', organizationRoutes);
+app.use('/api/categories', categoryRoutes);
 
 // Default route
 app.get('/', (req: Request, res: Response) => {
