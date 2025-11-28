@@ -89,6 +89,16 @@ export const updateMemberRole = async (req: AuthRequest, res: Response) => {
     }
 };
 
+export const getMembers = async (req: AuthRequest, res: Response) => {
+    try {
+        const { id } = req.params;
+        const result = await orgService.getOrganizationMembers(id);
+        res.status(200).json({ success: true, data: result });
+    } catch (error: any) {
+        res.status(400).json({ success: false, error: error.message });
+    }
+};
+
 // --- DIVISIONS ---
 
 export const createDivision = async (req: AuthRequest, res: Response) => {

@@ -121,6 +121,16 @@ export const updateMemberRole = async (orgId: string, adminId: string, targetUse
     return result;
 };
 
+export const getOrganizationMembers = async (orgId: string) => {
+    return await prisma.organizationMember.findMany({
+        where: { orgId },
+        include: {
+            user: { select: { id: true, name: true, email: true } },
+            role: true,
+        },
+    });
+};
+
 // ==========================================
 // DIVISION MANAGEMENT
 // ==========================================

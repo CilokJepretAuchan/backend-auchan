@@ -22,6 +22,7 @@ router.get('/:id', authorize(allMemberRoles), orgController.getDetail);
 router.put('/:id', authorize(adminRoles), orgController.update);
 
 // --- Members Management ---
+router.get('/:id/members', authorize(allMemberRoles), orgController.getMembers);
 router.post('/:id/members', authorize(adminRoles), orgController.addMember);
 router.put('/:id/members/:memberId', authorize(adminRoles), orgController.updateMemberRole);
 router.delete('/:id/members/:memberId', authorize(adminRoles), orgController.removeMember);
