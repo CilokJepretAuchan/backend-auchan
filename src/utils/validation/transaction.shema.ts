@@ -34,7 +34,6 @@ export const updateTransactionSchema = z.object({
  * Includes pagination support with default values.
  */
 export const listTransactionsSchema = z.object({
-    organizationId: z.uuid(),
     projectId: z.uuid().optional(),
     startDate: z.coerce.date().optional(),
     endDate: z.coerce.date().optional(),

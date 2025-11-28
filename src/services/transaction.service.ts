@@ -119,9 +119,27 @@ export const createTransaction = async (
 /**
  * Mengambil satu transaksi detail berdasarkan ID.
  */
-export const getTransactionById = async (transactionId: string, organizationId: string) => {
+export const getTransactionById = async (transactionId: string, userId: string) => {
+    console.log(transactionId, userId);
+
+    const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+            members: {
+                take: 1, // Ambil organisasi pertama (asumsi single-org context per login)
+                select: { orgId: true }
+            }
+        }
+    });
+
+    if (!user || !user.members || user.members.length === 0) {
+        throw new Error("User tidak terhubung dengan Organization manapun.");
+    }
+
+    // Ambil Organization ID dari membership user
+    const orgId = user.members[0].orgId;
     const transaction = await prisma.transaction.findFirst({
-        where: { id: transactionId, orgId: organizationId },
+        where: { id: transactionId, orgId },
         include: {
             user: { select: { name: true, email: true } },
             category: { select: { categoryName: true } },
@@ -145,11 +163,27 @@ export const getTransactionById = async (transactionId: string, organizationId: 
  * @param query The validated query parameters, including orgId and pagination.
  * @returns A list of transactions with their related data.
  */
-export const getTransactions = async (query: ListInput) => {
-    const { organizationId, projectId, type, startDate, endDate, page, limit } = query;
+export const getTransactions = async (userId: string, query: ListInput) => {
+    const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+            members: {
+                take: 1, // Ambil organisasi pertama (asumsi single-org context per login)
+                select: { orgId: true }
+            }
+        }
+    });
+
+    if (!user || !user.members || user.members.length === 0) {
+        throw new Error("User tidak terhubung dengan Organization manapun.");
+    }
+
+    // Ambil Organization ID dari membership user
+    const orgId = user.members[0].orgId;
+    const { projectId, type, startDate, endDate, page, limit } = query;
 
     const whereClause: any = {
-        organizationId,
+        orgId,
         ...(type && { type }),
         ...(projectId && { projectId }),
         ...(startDate && endDate && {

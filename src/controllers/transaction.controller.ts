@@ -39,10 +39,16 @@ export const create = async (req: AuthRequest, res: Response) => {
  */
 export const list = async (req: AuthRequest, res: Response) => {
     try {
+        const userId = req.user?.userId;
+
+        if (!userId) {
+            return res.status(401).json({ success: false, error: 'Unauthorized' });
+        }
+        console.log(req.query);
         // Validate query parameters for pagination and organization ID.
         const validatedQuery = listTransactionsSchema.parse(req.query);
 
-        const result = await transactionService.getTransactions(validatedQuery);
+        const result = await transactionService.getTransactions(userId, validatedQuery);
 
         return res.status(200).json({ success: true, data: result });
     } catch (error: any) {
@@ -76,12 +82,14 @@ export const verify = async (req: AuthRequest, res: Response) => {
  */
 export const getDetail = async (req: AuthRequest, res: Response) => {
     try {
-        const { id } = req.params; // Transaction ID
-        const { organizationId } = req.query; // Security check: Ensure org match
+        const { id } = req.params;
+        const userId = req.user?.userId;
 
-        if (!organizationId) throw new Error("Organization ID is required for verification");
+        if (!userId) {
+            return res.status(401).json({ success: false, error: 'Unauthorized' });
+        }
 
-        const result = await transactionService.getTransactionById(id, organizationId as string);
+        const result = await transactionService.getTransactionById(id, userId as string);
 
         return res.status(200).json({ success: true, data: result });
     } catch (error: any) {
