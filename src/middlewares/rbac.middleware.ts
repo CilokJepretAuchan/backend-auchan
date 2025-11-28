@@ -17,7 +17,7 @@ export const authorize = (allowedRoles: string[]) => {
             }
 
             // Flexibly retrieve Organization ID from params, query, or body
-            let orgId = req.params.id || req.params.orgId || (req.query.orgId as string) || req.body.orgId;
+            let orgId = req.params.orgId || (req.query.orgId as string) || req.body.orgId;
             // If orgId is not in the request, try to get it from the user's membership
             if (!orgId) {
                 const user = await prisma.user.findUnique({

@@ -136,8 +136,6 @@ export const createTransaction = async (
  * Mengambil satu transaksi detail berdasarkan ID.
  */
 export const getTransactionById = async (transactionId: string, userId: string) => {
-    console.log(transactionId, userId);
-
     const user = await prisma.user.findUnique({
         where: { id: userId },
         select: {
