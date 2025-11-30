@@ -164,6 +164,7 @@ export const getTransactionById = async (transactionId: string, userId: string) 
             },
             attachments: true,
             blockchainRecord: true,
+            anomalyReport: true
         },
     });
 
@@ -376,7 +377,10 @@ export const getDashboardStatistics = async (userId: string) => {
         }),
         prisma.anomalyReport.count({
             where: {
-                aiScore: 1,
+                aiScore: {
+                    gt: 0.5,
+                    lte: 1,
+                },
                 transaction: {
                     orgId,
                 },
