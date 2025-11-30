@@ -131,7 +131,7 @@ model AnomalyReport {
   auditorId     String?
   auditorNotes  String?
   createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  updatedAt     DateTime?     @updatedAt
 }
 
 model BlockchainRecord {
